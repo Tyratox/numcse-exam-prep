@@ -55,7 +55,7 @@ void polyfit(VectorXd &c, const VectorXd &x, const VectorXd &y, int d) {
         V.col(i) = V.col(i - 1).cwiseProduct(x);
     }
 
-    c = (V.transpose() * V).lu().solve(V.transpose() * y).reverse();
+    c = V.householderQr().solve(y).reverse();
 }
 
 vector<double> toCpp(VectorXd v) {
