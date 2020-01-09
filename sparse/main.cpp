@@ -110,7 +110,7 @@ int main() {
     auto f = [](double d) { return M_PI * M_PI * sin(M_PI * d); };
 
     vector<double> x(30);
-    vector<double> error(30);
+    vector<double> diff(30);
     vector<double> norm(30);
     vector<double> sparse(30);
 
@@ -144,22 +144,29 @@ int main() {
             std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2)
                 .count();
 
-        double e = (s1 - s2).norm();
+        double d = (s1 - s2).norm();
 
         norm[i] = duration1;
         sparse[i] = duration2;
-        error[i] = e;
+        diff[i] = d;
 
         cout << setw(16) << N << setw(16) << duration1 << setw(16) << duration2
-             << setw(16) << e << endl;
+             << setw(16) << d << endl;
     }
 
     plt::figure();
+    plt::xlabel("N");
+    plt::ylabel("time");
     plt::named_plot("Normal equations", x, norm);
     plt::named_plot("Extended normal equations", x, sparse);
-    plt::named_plot("Difference", x, error);
     plt::legend();
     plt::save("./sparse.png");
+
+    plt::figure();
+    plt::xlabel("N");
+    plt::ylabel("difference");
+    plt::semilogy(x, diff);
+    plt::save("./difference.png");
 
     return 0;
 }
