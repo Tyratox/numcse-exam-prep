@@ -14,24 +14,35 @@ using namespace Eigen;
 
 namespace plt = matplotlibcpp;
 
-/**
- * Evaluates a polynomial of degree c.size()-1 with coefficients c at all positions x and
- * stores the results in y. c[0] contains the coefficient of maximal degree
-*/
-void evaluate(VectorXd &y, const VectorXd &x, const VectorXd &c) {
-    int d = c.size() - 1;
-    int s = c.size();
+void dividedDiff(VectorXd &c, const VectorXd &x, const VectorXd &y) {
+    assert(x.size() == y.size());
+    int n = y.size();
 
-    VectorXd ones = VectorXd::Ones(x.size());
+    c = y;
 
-    y = c[0] * ones;
-
-    for (int i = 1; i < s; i++) {
-        y = y.cwiseProduct(x) + c[i] * ones;
+    for (int l = 0; l < n; l++) {
+        for (int k = n - l; k < n; k++) {
+            c[k] = (c[k] - c[k - 1]) / (x[k] - x[n - 1 - l]);
+        }
     }
+
+    // c.reverseInPlace();
 }
 
-void interpolate(VectorXd &c, const VectorXd &x, const VectorXd &y) {
+void newton(VectorXd &c, const VectorXd &x, const VectorXd &y) {
+    assert(x.size() == y.size());
+    int n = y.size();
+
+    MatrixXd A(n, n);
+    A.col(0) = VectorXd::Ones(n);
+    for (int i = 1; i < n; i++) {
+        A.col(i) = A.col(i - 1).cwiseProduct((x.array() - x[i - 1]).matrix());
+    }
+
+    c = A.template triangularView<Lower>().solve(y).reverse();
+}
+
+void monomial(VectorXd &c, const VectorXd &x, const VectorXd &y) {
     assert(x.size() == y.size());
     int n = y.size();
 
@@ -44,65 +55,44 @@ void interpolate(VectorXd &c, const VectorXd &x, const VectorXd &y) {
     c = V.lu().solve(y).reverse();
 }
 
-void polyfit(VectorXd &c, const VectorXd &x, const VectorXd &y, int d) {
-    assert(x.size() == y.size());
-
-    int n = y.size();
-
-    MatrixXd V(n, d + 1); //vandermonde matrix
-    V.col(0) = VectorXd::Ones(n);
-    for (int i = 1; i < d + 1; i++) {
-        V.col(i) = V.col(i - 1).cwiseProduct(x);
-    }
-
-    c = V.householderQr().solve(y).reverse();
-}
-
-vector<double> toCpp(VectorXd v) {
-    vector<double> vec(v.data(), v.data() + v.size());
-    return vec;
-}
-
 int main() {
 
     plt::figure();
-    plt::figure_size(2400, 2400);
     plt::xlabel("x");
     plt::ylabel("y");
-    plt::xlim(0, 1);
-    plt::ylim(-3, 3);
 
-    int N = 10;
+    int M = 100;
 
-    VectorXd x = VectorXd::LinSpaced(N, 0, 1);
-    VectorXd y = VectorXd::Random(N);
+    vector<double> xAxis(M);
+    vector<double> time1(M);
+    vector<double> time2(M);
+    vector<double> time3(M);
 
-    vector<double> vecX = toCpp(x);
-    vector<double> vecY = toCpp(y);
+    for (int i = 0; i < M; i++) {
+        int N = i + 2;
 
-    VectorXd xSampling = VectorXd::LinSpaced(N * 100, 0, 1);
+        xAxis[i] = N;
+        VectorXd x = VectorXd::LinSpaced(N, 0, 1);
+        VectorXd y = VectorXd::Random(N);
 
-    VectorXd coefficients, yInterpolation;
-    interpolate(coefficients, x, y);
-    evaluate(yInterpolation, xSampling, coefficients);
+        VectorXd c1, c2, c3;
 
-    vector<double> vecXSampling = toCpp(xSampling);
-    vector<double> vecYInterpolation = toCpp(yInterpolation);
+        auto t1 = chrono::high_resolution_clock::now();
+        monomial(c1, x, y);
+        auto t2 = chrono::high_resolution_clock::now();
+        newton(c2, x, y);
+        auto t3 = chrono::high_resolution_clock::now();
+        dividedDiff(c3, x, y);
+        auto t4 = chrono::high_resolution_clock::now();
 
-    plt::named_plot("Input nodes", vecX, vecY, "bo");
-    plt::named_plot("Polynomial interpolation for d=N-1", vecXSampling, vecYInterpolation, "r");
-
-    string name = "Polyfit with d = ";
-
-    for (int i = 0; i < N - 1; i++) {
-        VectorXd c, yFit;
-        polyfit(c, x, y, i);
-        evaluate(yFit, xSampling, c);
-
-        vector<double> vecYFit = toCpp(yFit);
-
-        plt::named_plot(name + to_string(i), vecXSampling, vecYFit, "--");
+        time1[i] = chrono::duration_cast<chrono::microseconds>(t2 - t1).count();
+        time2[i] = chrono::duration_cast<chrono::microseconds>(t3 - t2).count();
+        time3[i] = chrono::duration_cast<chrono::microseconds>(t4 - t3).count();
     }
+
+    plt::named_plot("Monomial", xAxis, time1);
+    plt::named_plot("Newton", xAxis, time2);
+    plt::named_plot("Divided differences", xAxis, time3);
 
     plt::legend();
     plt::save("./interpolation.png");
