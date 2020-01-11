@@ -1,6 +1,6 @@
 #define WITHOUT_NUMPY 1
 
-#include "matplotlibcpp.h"
+#include "../matplotlibcpp.h"
 #include <chrono>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
@@ -89,8 +89,8 @@ int main() {
     vector<double> vecXSampling = toCpp(xSampling);
     vector<double> vecYInterpolation = toCpp(yInterpolation);
 
-    plt::named_plot("Input nodes", vecX, vecY, "bo");
-    plt::named_plot("Polynomial interpolation for d=N-1", vecXSampling, vecYInterpolation, "r");
+    plt::plot(vecX, vecY, {{"label", "Input nodes"}, {"color", "blue"}, {"marker", "o"}});
+    plt::plot(vecXSampling, vecYInterpolation, {{"label", "Polynomial interpolation for d=N-1"}, {"color", "red"}});
 
     string name = "Polyfit with d = ";
 
@@ -101,11 +101,11 @@ int main() {
 
         vector<double> vecYFit = toCpp(yFit);
 
-        plt::named_plot(name + to_string(i), vecXSampling, vecYFit, "--");
+        plt::plot(vecXSampling, vecYFit, {{"label", name + to_string(i)}, {"linestyle", "--"}});
     }
 
     plt::legend();
-    plt::save("./monomial.png");
+    plt::savefig("./monomial.png");
 
     return 0;
 }

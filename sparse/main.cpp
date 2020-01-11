@@ -1,6 +1,6 @@
 #define WITHOUT_NUMPY 1
 
-#include "matplotlibcpp.h"
+#include "../matplotlibcpp.h"
 #include <chrono>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
@@ -157,16 +157,16 @@ int main() {
     plt::figure();
     plt::xlabel("N");
     plt::ylabel("time");
-    plt::named_plot("Normal equations", x, norm);
-    plt::named_plot("Extended normal equations", x, sparse);
+    plt::plot(x, norm, {{"label", "Normal equations"}});
+    plt::plot(x, sparse, {{"label", "Extended normal equations"}});
     plt::legend();
-    plt::save("./sparse.png");
+    plt::savefig("./sparse.png");
 
     plt::figure();
     plt::xlabel("N");
     plt::ylabel("difference");
     plt::semilogy(x, diff);
-    plt::save("./difference.png");
+    plt::savefig("./difference.png");
 
     return 0;
 }

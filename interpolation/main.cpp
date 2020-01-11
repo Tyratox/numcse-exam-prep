@@ -1,6 +1,6 @@
 #define WITHOUT_NUMPY 1
 
-#include "matplotlibcpp.h"
+#include "../matplotlibcpp.h"
 #include <chrono>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
@@ -90,12 +90,12 @@ int main() {
         time3[i] = chrono::duration_cast<chrono::microseconds>(t4 - t3).count();
     }
 
-    plt::named_plot("Monomial", xAxis, time1);
-    plt::named_plot("Newton", xAxis, time2);
-    plt::named_plot("Divided differences", xAxis, time3);
+    plt::plot(xAxis, time1, {{"label", "Monomial"}});
+    plt::plot(xAxis, time2, {{"label", "Newton"}});
+    plt::plot(xAxis, time3, {{"label", "Divided differences"}});
 
     plt::legend();
-    plt::save("./interpolation.png");
+    plt::savefig("./interpolation.png");
 
     return 0;
 }

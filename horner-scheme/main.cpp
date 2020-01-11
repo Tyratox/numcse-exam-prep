@@ -1,6 +1,6 @@
 #define WITHOUT_NUMPY 1
 
-#include "matplotlibcpp.h"
+#include "../matplotlibcpp.h"
 #include <chrono>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
@@ -68,8 +68,8 @@ int main() {
     vector<double> normal(max);
     vector<double> hornerScheme(max);
 
-    auto f = [] (double x){
-        return 3*pow(sin(x), 3) + 2*x - 5*sin(x);
+    auto f = [](double x) {
+        return 3 * pow(sin(x), 3) + 2 * x - 5 * sin(x);
     };
 
     for (int i = 0; i < max; i++) {
@@ -77,9 +77,9 @@ int main() {
         xAxis[i] = N;
 
         VectorXd x = VectorXd::LinSpaced(N, 0, 1);
-        VectorXd xSampling = VectorXd::LinSpaced(N*1000, 0, 1);
+        VectorXd xSampling = VectorXd::LinSpaced(N * 1000, 0, 1);
         VectorXd y(N);
-        for(int j=0;j<N;j++){
+        for (int j = 0; j < N; j++) {
             y(j) = f(x(j));
         }
 
@@ -100,15 +100,15 @@ int main() {
             plt::xlabel("x");
             plt::ylabel("y");
 
-            plt::named_plot("exact", toCpp(x), toCpp(y), "ro");
-            plt::named_plot("normal evaluation", toCpp(xSampling), toCpp(res1), "g");
-            plt::named_plot("horner scheme", toCpp(xSampling), toCpp(res2), "b");
+            plt::plot(toCpp(x), toCpp(y), {{"label", "exact"}, {"color", "red"}, {"marker", "o"}});
+            plt::plot(toCpp(xSampling), toCpp(res1), {{"label", "normal evaluation"}, {"color", "green"}});
+            plt::plot(toCpp(xSampling), toCpp(res2), {{"label", "horner scheme"}, {"color", "blue"}});
             plt::legend();
-            plt::save(string("./error-") + to_string(N) + string(".png"));
+            plt::savefig(string("./error-") + to_string(N) + string(".png"));
         }
 
         assert(res1.size() == res2.size());
-        assert((res1-res2).norm() < 1E-7);
+        assert((res1 - res2).norm() < 1E-7);
 
         normal[i] = chrono::duration_cast<chrono::microseconds>((t2 - t1)).count();
         hornerScheme[i] = chrono::duration_cast<chrono::microseconds>((t3 - t2)).count();
@@ -118,10 +118,10 @@ int main() {
     plt::xlabel("N");
     plt::ylabel("time");
 
-    plt::named_plot("Normal evaluation", xAxis, normal, "r");
-    plt::named_plot("Horner scheme", xAxis, hornerScheme, "g");
+    plt::plot(xAxis, normal, {{"label", "Normal evaluation"}, {"color", "red"}});
+    plt::plot(xAxis, hornerScheme, {{"label", "Horner scheme"}, {"color", "green"}});
     plt::legend();
-    plt::save("./horner.png");
+    plt::savefig("./horner.png");
 
     return 0;
 }

@@ -1,6 +1,6 @@
 #define WITHOUT_NUMPY 1
 
-#include "matplotlibcpp.h"
+#include "../matplotlibcpp.h"
 #include <chrono>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
@@ -138,21 +138,21 @@ int main() {
     plt::xlabel("N");
     plt::ylabel("time");
 
-    plt::named_plot("monomial+eval", xAxis, interpolation1, "r");
-    plt::named_plot("newton+eval", xAxis, interpolation2, "b");
-    plt::named_plot("Aitken Neville", xAxis, aNeville, "g");
+    plt::plot(xAxis, interpolation1, {{"label", "monomial+eval"}, {"color", "red"}});
+    plt::plot(xAxis, interpolation2, {{"label", "newton+eval"}, {"color", "blue"}});
+    plt::plot(xAxis, aNeville, {{"label", "Aitken Neville"}, {"color", "green"}});
     plt::legend();
-    plt::save("./aitken-neville.png");
+    plt::savefig("./aitken-neville.png");
 
     plt::figure();
     plt::xlabel("N");
     plt::ylabel("y");
-    plt::named_semilogy("Error monomtial+eval", xAxis, err1, "r");
-    plt::named_semilogy("Error newton+eval", xAxis, err2, "g");
-    plt::named_semilogy("Error Aitken-Neville", xAxis, err3, "b");
+    plt::semilogy(xAxis, err1, {{"label", "Error monomtial+eval"}, {"color", "red"}});
+    plt::semilogy(xAxis, err2, {{"label", "Error newton+eval"}, {"color", "green"}});
+    plt::semilogy(xAxis, err3, {{"label", "Error Aitken-Neville"}, {"color", "blue"}});
     plt::legend();
 
-    plt::save("./error.png");
+    plt::savefig("./error.png");
 
     return 0;
 }
