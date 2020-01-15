@@ -1,6 +1,6 @@
 #define WITHOUT_NUMPY 1
 
-#include "matplotlibcpp.h"
+#include "../matplotlibcpp.h"
 #include <eigen3/Eigen/Dense>
 #include <iomanip>
 #include <iostream>
@@ -47,7 +47,7 @@ int main() {
     // Enable legend.
     plt::legend();
     // Save the image (file format is determined by the extension)
-    plt::save("./difference_quotient.png");
+    plt::savefig("./difference_quotient.png");
 
     return 0;
 }
