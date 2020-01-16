@@ -46,7 +46,7 @@ void interpolate(VectorXd &c, const VectorXd &x, const VectorXd &y) {
     c = A.template triangularView<Lower>().solve(y).reverse();
 }
 
-void interpolateFast(VectorXd &c, const VectorXd &x, const VectorXd &y) {
+void dividedDifferences(VectorXd &c, const VectorXd &x, const VectorXd &y) {
     assert(x.size() == y.size());
     int n = y.size();
 
@@ -101,7 +101,7 @@ int main() {
     VectorXd xSampling = VectorXd::LinSpaced(N * 100, 0, 1);
 
     VectorXd coefficients, yInterpolation;
-    interpolateFast(coefficients, x, y);
+    dividedDifferences(coefficients, x, y);
     evaluate(yInterpolation, xSampling, coefficients, x);
 
     vector<double> vecXSampling = toCpp(xSampling);
