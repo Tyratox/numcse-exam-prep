@@ -48,37 +48,42 @@ MatrixXd bestApproximation(const MatrixXd &A, int k) {
 
 MatrixXd getTrendVectors(const MatrixXd &A) {
     JacobiSVD<MatrixXd> svd(A, ComputeThinU);
-    return svd.matrixU();
+    return svd.matrixU() * svd.singularValues();
 }
 
 int main() {
 
-    MatrixXd B(2, 10);
-    B << -1, -0.75, -0.4, -0.3, -0.15, 0.18, 0.3, 0.6, 0.8, 1,
-        0, -0.5, -1.0, -1.1, -1.1, -1.0, -0.5, 0.1, 1.0, 2.0;
+    VectorXd x(10);
+    x << -1, -0.75, -0.4, -0.3, -0.15, 0.18, 0.3, 0.6, 0.8, 1;
+
+    VectorXd y(10);
+    y << 0, -0.5, -1.0, -1.1, -1.1, -1.0, -0.5, 0.1, 1.0, 2.0;
+
+    VectorXd y2(10);
+    y2 << -1, -1, -2.0, -1.5, -2.1, -1.5, 0.5, 0.7, 1.1, 2.2;
 
     //center data around 0
-    B.row(0) = (B.row(0).array() - (B.row(0).mean())).matrix();
-    B.row(1) = (B.row(1).array() - (B.row(1).mean())).matrix();
+    /*B.row(0) = (B.row(0).array() - (B.row(0).mean())).matrix();
+    B.row(1) = (B.row(1).array() - (B.row(1).mean())).matrix();*/
 
     plt::figure();
-    plt::plot(toCpp(B.row(0)), toCpp(B.row(1)), {{"label", "data points"}, {"marker", "o"}, {"linestyle", ""}});
+    plt::plot(toCpp(x), toCpp(y), {{"label", "data points"}, {"marker", "o"}, {"linestyle", ""}});
 
     VectorXd c;
-    polyfit(c, B.row(0), B.row(1), 2);
+    polyfit(c, x, y, 2);
 
-    VectorXd samplingX = VectorXd::LinSpaced(1000, B.row(0).minCoeff(), B.row(0).maxCoeff());
+    VectorXd samplingX = VectorXd::LinSpaced(1000, x.minCoeff(), x.maxCoeff());
     VectorXd samplingY;
     evaluate(samplingY, c, samplingX);
 
     plt::plot(toCpp(samplingX), toCpp(samplingY), {{"label", "interpolated polynomial"}});
 
+    MatrixXd B(10, 2);
+    B << x, y;
+
     MatrixXd B1 = getTrendVectors(B);
     for (int i = 0; i < B1.cols(); i++) {
-        c = Vector2d(0, B1(1, i) / B1(0, i));
-        evaluate(samplingY, c, samplingX);
-
-        plt::plot(toCpp(samplingX), toCpp(samplingY), {{"label", "principal component"}});
+        plt::plot(toCpp(x), toCpp(B1.col(i)), {{"label", "principal component"}});
     }
 
     plt::legend();
